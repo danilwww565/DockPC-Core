@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DOCK_PC — Сервис и ремонт ПК</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root{
+  --bg1:#071026; --panel:#0f1724; --accent:#0ea5e9; --accent2:#7c3aed;
+  --muted:#9aa4b2; --card-radius:12px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:Inter,system-ui,Arial,sans-serif; -webkit-font-smoothing:antialiased;
+  background:linear-gradient(180deg,#031025 0%, #071026 100%); color:#e6eef6;
+}
+.wrap{max-width:1100px;margin:20px auto;padding:18px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); box-shadow:0 10px 40px rgba(2,6,23,0.6);}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+.brand h1{margin:0;font-size:20px}
+.contact{color:var(--muted);font-size:13px}
+.main{display:grid;grid-template-columns:1fr 380px;gap:18px}
+.left{padding:6px}
+.controls{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+#search{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:#e6eef6}
+.tab{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:#dbeafe}
+.tab:hover{transform:translateY(-3px);transition:.12s}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.service-card{border-radius:var(--card-radius);padding:12px;color:#fff;min-height:100px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;box-shadow:0 8px 28px rgba(2,6,23,0.6);transition:transform .12s}
+.service-card:hover{transform:translateY(-6px)}
+.service-card h3{margin:0;font-size:15px}
+.service-card p{margin:6px 0 0;color:rgba(255,255,255,0.9);font-size:13px}
+.price{font-weight:700;opacity:0.95;text-align:right}
+/* category colors */
+.cat-windows{background:linear-gradient(135deg,#0369a1,#06b6d4)}
+.cat-upgrade{background:linear-gradient(135deg,#d97706,#f59e0b)}
+.cat-network{background:linear-gradient(135deg,#059669,#10b981)}
+.cat-bios{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.cat-other{background:linear-gradient(135deg,#7c3aed,#6366f1)}
+
+/* right */
+.right{display:flex;flex-direction:column;gap:12px}
+.stats{display:flex;gap:8px;justify-content:space-between;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;font-size:13px}
+.stat{text-align:center}
+.chat-box{background:#fff;border-radius:12px;color:#0b1220;overflow:hidden;display:flex;flex-direction:column;height:520px}
+.chat-header{padding:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;font-weight:700}
+.chat-body{padding:12px;flex:1;overflow:auto;background:linear-gradient(180deg,#f7fcff,#eef9ff);display:flex;flex-direction:column;gap:8px}
+.msg{display:inline-block;padding:8px 10px;border-radius:10px;max-width:80%}
+.msg.bot{background:#f1f8ff;color:#0b1220;align-self:flex-start}
+.msg.user{background:linear-gradient(90deg,var(--accent),#06b6d4);color:#fff;align-self:flex-end}
+.chat-input{display:flex;padding:10px;background:#fff;border-top:1px solid #eef6ff}
+.chat-input input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(2,6,23,0.06)}
+.chat-input button{margin-left:8px;padding:10px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;cursor:pointer}
+.quick-actions{display:flex;gap:8px;padding:8px;background:transparent;flex-wrap:wrap;justify-content:center}
+.qa-btn{background:#fff;padding:8px;border-radius:8px;border:1px solid rgba(2,6,23,0.06);cursor:pointer;font-weight:600;white-space:nowrap}
+.qa-btn:hover{background:#f1f5f9}
+
+/* modal */
+.modal-back{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;z-index:220}
+.modal{width:460px;background:#fff;color:#0b1220;border-radius:12px;padding:16px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:13px;margin-bottom:6px;color:#334155}
+.field input, .field textarea, .field select{width:100%;padding:9px;border-radius:8px;border:1px solid #e6eef8;font-size:14px}
+.row{display:flex;gap:8px}
+.btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:0;padding:10px 12px;border-radius:8px;cursor:pointer}
+.btn-ghost{background:#f3f4f6;border:0;padding:10px;border-radius:8px;cursor:pointer}
+
+footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+
+@media(max-width:980px){
+  .main{grid-template-columns:1fr}
+  .services-grid{grid-template-columns:repeat(2,1fr)}
+  .chat-box{height:420px}
+}
+@media(max-width:600px){ .services-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">DP</div>
+      <div>
+        <h1>DOCK_PC</h1>
+        <div class="contact">Ремонт · Настройка · Выездная помощь · @DOCK_PC</div>
+      </div>
+    </div>
+
+    <div class="contact">📞 <a href="tel:+79674532198" style="color:#cfe9ff;text-decoration:none">+7 967 453-21-98</a></div>
+  </header>
+
+  <section class="main">
+    <!-- LEFT: services -->
+    <div class="left">
+      <div class="controls">
+        <input id="search" placeholder="Поиск услуг (например: Windows, BIOS, разгон)"/>
+        <button class="tab" id="resetBtn">Сброс</button>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <div class="tab" data-cat="Windows">Windows</div>
+        <div class="tab" data-cat="Апгрейд">Апгрейд</div>
+        <div class="tab" data-cat="Сеть">Сеть</div>
+        <div class="tab" data-cat="BIOS">BIOS</div>
+        <div class="tab" data-cat="Доп. услуги">Доп. услуги</div>
+      </div>
+
+      <div class="services-grid" id="servicesGrid" style="margin-top:8px"></div>
+    </div>
+
+    <!-- RIGHT: chat + stats -->
+    <aside class="right">
+      <div class="stats">
+        <div class="stat">
+          <div class="small-muted">Диалогов начато</div>
+          <b id="statStarted">0</b>
+        </div>
+        <div class="stat">
+          <div class="small-muted">Заявок отправлено</div>
+          <b id="statSent">0</b>
+        </div>
+        <div class="stat">
+          <div class="small-muted">Среднее время (с)</div>
+          <b id="statAvg">—</b>
+        </div>
+      </div>
+
+      <div class="chat">
+        <div class="chat-box" style="height:100%">
+          <div class="chat-header">Чат — Docky (бот)</div>
+          <div class="chat-body" id="chatBody" aria-live="polite"></div>
+
+          <div style="padding:8px">
+            <div class="quick-actions">
+              <button class="qa-btn" data-quick="Выезд">Выезд</button>
+              <button class="qa-btn" data-quick="Перезвонить">Перезвонить</button>
+              <button class="qa-btn" data-quick="Проблема с ПК">Проблема с ПК</button>
+              <button class="qa-btn" data-quick="К оператору">К оператору</button>
+            </div>
+          </div>
+
+          <div class="chat-input">
+            <input id="chatInput" placeholder="Напишите сообщение..." />
+            <button id="sendBtn">Отправить</button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </section>
+
+  <footer class="small-muted">© DOCK_PC — demo. (Telegram: t.me/DOCK_PC)</footer>
+</div>
+
+<!-- Modal form -->
+<div class="modal-back" id="modalBack">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3>Заявка на услугу</h3>
+    <form id="serviceForm">
+      <div class="field">
+        <label>Услуга</label>
+        <input id="fieldService" readonly />
+      </div>
+      <div class="field">
+        <label>Категория</label>
+        <input id="fieldCategory" readonly />
+      </div>
+      <div class="row">
+        <div style="flex:1" class="field">
+          <label>Имя</label>
+          <input id="fieldName" required />
+        </div>
+        <div style="flex:1" class="field">
+          <label>Фамилия</label>
+          <input id="fieldSurname" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Телефон</label>
+        <input id="fieldPhone" placeholder="+7..." required />
+      </div>
+      <div class="field">
+        <label>Email (опционально)</label>
+        <input id="fieldEmail" type="email" />
+      </div>
+      <div class="field">
+        <label>Адрес (опционально)</label>
+        <div style="display:flex;gap:8px">
+          <input id="fieldAddress" />
+          <button type="button" class="btn-ghost" onclick="fillAddressByGeolocation()">Автозаполнить</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Комментарий</label>
+        <textarea id="fieldComment" rows="3"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button type="button" class="btn-ghost" onclick="closeForm()">Отмена</button>
+        <button type="submit" class="btn-primary">Отправить в Telegram</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ========== CONFIG ========== */
+const TELEGRAM_USERNAME = "DOCK_PC"; // уже установлен
+/* ========================= */
+
+/* Utilities */
+function el(id){ return document.getElementById(id); }
+function safeEncode(s){ return encodeURIComponent(s||''); }
+
+/* Services */
+const SERVICES = [
+  {name:"Установка и настройка Windows 11", category:"Windows", price:"ОТ 2500"},
+  {name:"Установка и настройка Windows 10", category:"Windows", price:"ОТ 2000"},
+  {name:"Установка и настройка Windows 7", category:"Windows", price:"ОТ 1800"},
+  {name:"Установка драйверов и программ", category:"Windows", price:"ОТ 450"},
+  {name:"Перенос данных и резервное копирование", category:"Доп. услуги", price:"ОТ 300"},
+  {name:"Восстановление данных (HDD/SSD)", category:"Доп. услуги", price:"ОТ 300/ГБ"},
+  {name:"Удаление вирусов и оптимизация", category:"Доп. услуги", price:"ОТ 310"},
+  {name:"Сборка системного блока", category:"Апгрейд", price:"ОТ 1200"},
+  {name:"Апгрейд видеокарты/CPU", category:"Апгрейд", price:"ОТ 800"},
+  {name:"Разгон ОЗУ (XMP / тайминги)", category:"Апгрейд", price:"ОТ 600"},
+  {name:"Перепрошивка BIOS / UEFI", category:"BIOS", price:"ОТ 600"},
+  {name:"Сброс пароля BIOS", category:"BIOS", price:"ОТ 500"},
+  {name:"Настройка Wi-Fi и роутера", category:"Сеть", price:"ОТ 300"},
+  {name:"Настройка локальной сети", category:"Сеть", price:"ОТ 700"},
+  {name:"Чистка компьютера и замена термопасты", category:"Доп. услуги", price:"ОТ 200"},
+  {name:"Консультация и подбор комплектующих", category:"Доп. услуги", price:"ОТ 500"}
+];
+
+/* Render */
+const grid = el('servicesGrid');
+function categoryClass(cat){
+  if(cat==="Windows") return 'cat-windows';
+  if(cat==="Апгрейд") return 'cat-upgrade';
+  if(cat==="Сеть") return 'cat-network';
+  if(cat==="BIOS") return 'cat-bios';
+  return 'cat-other';
+}
+function render(list){
+  grid.innerHTML = '';
+  list.forEach(s=>{
+    const card = document.createElement('div');
+    card.className = 'service-card ' + categoryClass(s.category);
+    card.innerHTML = `<div><h3>${s.name}</h3><p>${s.category}</p></div><div class="price">${s.price}</div>`;
+    card.onclick = ()=> openForm(s.name, s.category);
+    grid.appendChild(card);
+  });
+}
+render(SERVICES);
+
+/* Search & Tabs */
+el('search').addEventListener('input', function(){
+  const q = this.value.toLowerCase().trim();
+  if(!q) return render(SERVICES);
+  render(SERVICES.filter(s => (s.name + ' ' + s.category + ' ' + s.price).toLowerCase().includes(q)));
+});
+document.querySelectorAll('.tabs .tab').forEach(t=>{
+  t.addEventListener('click', ()=> {
+    const cat = t.dataset.cat;
+    render(SERVICES.filter(s=>s.category===cat));
+    openForm('', cat);
+  });
+});
+el('resetBtn').addEventListener('click', ()=> { el('search').value=''; render(SERVICES); });
+
+/* Modal form */
+const modal = el('modalBack');
+function openForm(service, category){
+  el('fieldService').value = service || '';
+  el('fieldCategory').value = category || '';
+  // prefill with last if exists
+  const last = JSON.parse(localStorage.getItem('dock_last_form')||'{}');
+  if(last.name) el('fieldName').value = last.name;
+  if(last.surname) el('fieldSurname').value = last.surname;
+  if(last.phone) el('fieldPhone').value = last.phone;
+  if(last.email) el('fieldEmail').value = last.email;
+  if(last.address) el('fieldAddress').value = last.address;
+  if(last.comment) el('fieldComment').value = last.comment;
+  modal.style.display = 'flex';
+}
+function closeForm(){ modal.style.display = 'none'; }
+
+/* Geolocation reverse */
+async function fillAddressByGeolocation(){
+  if(!navigator.geolocation){ alert('Геолокация не поддерживается'); return; }
+  try{
+    const pos = await new Promise((res, rej)=> navigator.geolocation.getCurrentPosition(res, rej, {timeout:8000}));
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+    const r = await fetch(url);
+    const j = await r.json();
+    el('fieldAddress').value = j.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+  } catch(e){
+    alert('Не удалось получить адрес (разрешение/ошибка).');
+  }
+}
+
+/* Submit form -> open Telegram */
+el('serviceForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const service = el('fieldService').value || '(не указана)';
+  const category = el('fieldCategory').value || '(не указана)';
+  const name = el('fieldName').value.trim();
+  const surname = el('fieldSurname').value.trim();
+  const phone = el('fieldPhone').value.trim();
+  const email = el('fieldEmail').value.trim();
+  const address = el('fieldAddress').value.trim();
+  const comment = el('fieldComment').value.trim();
+  if(!name || !phone){ alert('Пожалуйста, укажите имя и телефон.'); return; }
+  // save last
+  localStorage.setItem('dock_last_form', JSON.stringify({name,surname,phone,email,address,comment}));
+  // increase sent counter
+  const prev = parseInt(localStorage.getItem('dock_sent')||'0',10);
+  localStorage.setItem('dock_sent', prev + 1);
+  el('statSent').textContent = prev + 1;
+  // prepare message and open telegram
+  let tg = TELEGRAM_USERNAME || '';
+  if(!tg){ alert('TELEGRAM_USERNAME не указан.'); closeForm(); return; }
+  if(!tg.startsWith('http')) tg = 'https://t.me/' + tg;
+  const msg = `Новая заявка DOCK_PC.%0AУслуга: ${safeEncode(service)}%0AКатегория: ${safeEncode(category)}%0AИмя: ${safeEncode(name)}%0AФамилия: ${safeEncode(surname)}%0AТелефон: ${safeEncode(phone)}%0AEmail: ${safeEncode(email)}%0AАдрес: ${safeEncode(address)}%0AКомментарий: ${safeEncode(comment)}`;
+  window.open(tg + (tg.includes('?')? '&':'?') + 'text=' + msg, '_blank');
+  alert('Открылся Telegram — отправьте сообщение оператору в открывшемся чате.');
+  closeForm();
+});
+
+/* BOT */
+const chatBody = el('chatBody');
+const chatInput = el('chatInput');
+const sendBtn = el('sendBtn');
+const quickBtns = document.querySelectorAll('.qa-btn');
+
+// state & stats
+let botState = JSON.parse(localStorage.getItem('dock_botstate')||'{"step":0,"name":"","surname":"","issue":"","startedAt":null}');
+let stats = {
+  started: parseInt(localStorage.getItem('dock_started')||'0',10),
+  sent: parseInt(localStorage.getItem('dock_sent')||'0',10),
+  totalRespMs: parseInt(localStorage.getItem('dock_respms')||'0',10),
+  respCnt: parseInt(localStorage.getItem('dock_respcnt')||'0',10)
+};
+function saveStats(){ localStorage.setItem('dock_started', stats.started); localStorage.setItem('dock_sent', stats.sent); localStorage.setItem('dock_respms', stats.totalRespMs); localStorage.setItem('dock_respcnt', stats.respCnt); el('statStarted').textContent = stats.started; el('statSent').textContent = parseInt(localStorage.getItem('dock_sent')||stats.sent||0,10); el('statAvg').textContent = stats.respCnt? Math.round(stats.totalRespMs / stats.respCnt / 1000) + ' c':'—'; }
+saveStats();
+
+// chat history
+let chatHistory = JSON.parse(localStorage.getItem('dock_chat')||'[]');
+chatHistory.forEach(m=> appendMsg(m.text, m.who, false));
+if(chatHistory.length===0) setTimeout(()=> botSay('Привет! Я Docky — ваш виртуальный помощник. Как Вас зовут?'), 700);
+
+function appendMsg(text, who='bot', store=true){
+  const d = document.createElement('div');
+  d.className = 'msg ' + (who==='bot' ? 'bot' : 'user');
+  d.textContent = text;
+  chatBody.appendChild(d);
+  chatBody.scrollTop = chatBody.scrollHeight + 200;
+  if(store){ chatHistory.push({text,who,ts:Date.now()}); localStorage.setItem('dock_chat', JSON.stringify(chatHistory)); }
+}
+
+function botSay(txt){
+  appendMsg(txt, 'bot', true);
+  if("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied"){
+    Notification.requestPermission().catch(()=>{});
+  }
+}
+
+function userSay(txt){
+  appendMsg(txt,'user', true);
+}
+
+function handleUserMessage(text){
+  if(!text) return;
+  userSay(text);
+  if(!botState.startedAt){ botState.startedAt = Date.now(); stats.started++; saveStats(); }
+  if(botState.step === 0){
+    botState.step = 1; botState.name = text;
+    botSay(`Рад знакомству, ${botState.name}. Укажите, пожалуйста, вашу фамилию.`);
+  } else if(botState.step === 1){
+    botState.step = 2; botState.surname = text;
+    botSay('Опишите кратко проблему или нажмите одну из кнопок. Когда будете готовы связаться с мастером — напишите "оператор" или нажмите "К оператору".');
+  } else if(botState.step === 2){
+    botState.step = 3; botState.issue = text;
+    if(/вирус|баннер|троян|вредонос/i.test(text)){
+      botSay('Похоже на проблему с вредоносным ПО. Могу оформить заявку на удаление вирусов или связать с оператором. Напишите "оператор" или нажмите "К оператору".');
+    } else if(/выезд|приед|мастер/i.test(text)){
+      botSay('Оформляю выезд. Сейчас переведу вас в Telegram.');
+      setTimeout(()=> transferToTelegram(), 600);
+    } else {
+      botSay('Спасибо. Если хотите связаться с оператором — напишите "оператор" или нажмите "К оператору".');
+    }
+  } else {
+    if(/оператор|связ|позвон/i.test(text.toLowerCase())){
+      botSay('Сейчас я передам вашу информацию оператору и открою Telegram.');
+      setTimeout(()=> transferToTelegram(), 600);
+    } else {
+      botSay('Понял. Если нужно связать с оператором — напишите "оператор" или нажмите "К оператору".');
+    }
+  }
+  localStorage.setItem('dock_botstate', JSON.stringify(botState));
+}
+
+// quick buttons
+quickBtns.forEach(b=>{
+  b.addEventListener('click', ()=> {
+    const v = b.dataset.quick;
+    handleUserMessage(v);
+  });
+});
+
+// input send
+sendBtn.addEventListener('click', ()=> {
+  const txt = chatInput.value.trim();
+  if(!txt) return;
+  chatInput.value = '';
+  handleUserMessage(txt);
+});
+chatInput.addEventListener('keydown', e=> { if(e.key === 'Enter'){ e.preventDefault(); sendBtn.click(); } });
+
+// transfer to telegram
+function transferToTelegram(){
+  const name = botState.name || JSON.parse(localStorage.getItem('dock_last_form')||'{}').name || '';
+  const surname = botState.surname || JSON.parse(localStorage.getItem('dock_last_form')||'{}').surname || '';
+  const issue = botState.issue || '';
+  const phoneGuess = JSON.parse(localStorage.getItem('dock_last_form')||'{}').phone || '';
+  const msg = `Заявка от ${name} ${surname}. Проблема: ${issue}. Телефон: ${phoneGuess}`;
+  const tg = (TELEGRAM_USERNAME && TELEGRAM_USERNAME.startsWith('http')) ? TELEGRAM_USERNAME : ('https://t.me/' + TELEGRAM_USERNAME);
+  // stats
+  const sent = parseInt(localStorage.getItem('dock_sent')||'0',10) + 1;
+  localStorage.setItem('dock_sent', sent);
+  stats.totalRespMs = (stats.totalRespMs||0) + (botState.startedAt ? (Date.now() - botState.startedAt) : 0);
+  stats.respCnt = (stats.respCnt||0) + 1;
+  saveStats();
+  window.open(tg + (tg.includes('?') ? '&' : '?') + 'text=' + encodeURIComponent(msg), '_blank');
+  botSay('Открыл ссылку в Telegram. Пожалуйста, отправьте сообщение в появившемся чате.');
+  // reset
+  botState = {step:0, name:'', surname:'', issue:'', startedAt:null};
+  localStorage.setItem('dock_botstate', JSON.stringify(botState));
+}
+
+/* helpers */
+function safe(s){ return encodeURIComponent(s||''); }
+function saveStats(){ saveStats; } // placeholder to satisfy linter
+
+// init display stats
+el('statStarted').textContent = stats.started || 0;
+el('statSent').textContent = parseInt(localStorage.getItem('dock_sent')||stats.sent||0,10);
+el('statAvg').textContent = stats.respCnt ? Math.round(stats.totalRespMs / stats.respCnt / 1000) + ' c' : '—';
+
+</script>
+</body>
+</html>
